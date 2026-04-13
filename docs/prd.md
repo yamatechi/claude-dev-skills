@@ -3,7 +3,7 @@
 ## 概要
 
 仕様駆動開発（Spec-Driven Development）とテスト駆動開発（TDD）のワークフローを支援する Claude Code スキルセット。
-5つのスキルを段階的に使うことで、仕様→テスト→実装→レビュー→PR作成の一貫した開発フローを実現する。
+6つのスキル（5つの個別スキル + 1つのオーケストレーションスキル）を使うことで、仕様→テスト→実装→レビュー→PR作成の一貫した開発フローを実現する。
 
 ## 背景・課題
 
@@ -315,6 +315,8 @@ spec → test-gen → implement → review → pr
 
 ```
 skills/
+├── orchestrator/
+│   └── SKILL.md
 ├── create-spec/
 │   └── SKILL.md
 ├── create-tests/
@@ -336,6 +338,7 @@ skills/
 - `implement-code` → 実装コード → `review-implements` が読む
 - `review-implements` → レビューレポート（チャット出力 + `docs/review-report.md`） → ユーザーが `implement-code` または `create-tests` に指示
 - `review-implements`（承認） → `create-pr` が仕様書・タスク一覧・`docs/review-report.md`・git差分を読んでPR作成
+- `orchestrator` → 上記フロー全体を自動制御。プロジェクト状態を分析し開始ポイントを判定、各スキルを順次実行する
 
 ## 技術要件
 
@@ -363,5 +366,6 @@ skills/
 6. 仕様変更フロー → 差分更新モードで各ドキュメント・テスト・実装が更新される
 
 加えて:
+- `orchestrator` → 全フローを自動実行し、レビュー指摘の分岐（テスト不足→create-tests、コード不備→implement-code）が正しく動作すること
 - 新規プロジェクト・既存プロジェクトの両方で上記フローが動作すること
 - 各スキルが独立使用時の前提条件を満たせば単独で動作すること
