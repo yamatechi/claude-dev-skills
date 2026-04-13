@@ -33,14 +33,26 @@ create-spec → create-tests → implement-code → review-implements → create
 
 ## インストール
 
-### 方法1: シンボリックリンク（推奨）
+### 方法1: プラグインとしてインストール（推奨）
 
 ```bash
-git clone <repo-url> ~/claude-dev-skills
+claude plugin add /path/to/claude-dev-skills
+```
+
+プラグインとしてインストールすると、各スキルは `claude-dev-skills:` プレフィックス付きで呼び出せる:
+
+```
+/claude-dev-skills:orchestrator ログイン機能を作って
+```
+
+### 方法2: シンボリックリンク
+
+```bash
+git clone https://github.com/yamatechi/claude-dev-skills.git ~/claude-dev-skills
 ln -s ~/claude-dev-skills/skills/* ~/.claude/skills/
 ```
 
-### 方法2: プロジェクト固有
+### 方法3: プロジェクト固有
 
 ```bash
 cp -r skills/* <your-project>/.claude/skills/
