@@ -33,10 +33,13 @@ create-spec → create-tests → implement-code → review-implements → create
 
 ## インストール
 
-### 方法1: プラグインとしてインストール（推奨）
+### 方法1: マーケットプレイスからインストール（推奨）
 
-```bash
-claude plugin add /path/to/claude-dev-skills
+Claude Code 内で以下を実行:
+
+```
+/plugin marketplace add yamatechi/claude-dev-skills
+/plugin install claude-dev-skills@claude-dev-skills
 ```
 
 プラグインとしてインストールすると、各スキルは `claude-dev-skills:` プレフィックス付きで呼び出せる:
