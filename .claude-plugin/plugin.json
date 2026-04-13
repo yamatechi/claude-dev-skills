@@ -1,0 +1,19 @@
+{
+  "name": "claude-dev-skills",
+  "version": "1.0.0",
+  "description": "仕様駆動開発とテスト駆動開発のワークフローを自動化するClaude Codeプラグイン",
+  "author": {
+    "name": "yamatechi"
+  },
+  "repository": "https://github.com/yamatechi/claude-dev-skills",
+  "license": "MIT",
+  "keywords": [
+    "workflow",
+    "tdd",
+    "spec-driven",
+    "automation",
+    "testing",
+    "code-review",
+    "pull-request"
+  ]
+}

@@ -33,14 +33,29 @@ create-spec → create-tests → implement-code → review-implements → create
 
 ## インストール
 
-### 方法1: シンボリックリンク（推奨）
+### 方法1: マーケットプレイスからインストール（推奨）
+
+Claude Code 内で以下を実行:
+
+```
+/plugin marketplace add yamatechi/claude-dev-skills
+/plugin install claude-dev-skills@claude-dev-skills
+```
+
+プラグインとしてインストールすると、各スキルは `claude-dev-skills:` プレフィックス付きで呼び出せる:
+
+```
+/claude-dev-skills:orchestrator ログイン機能を作って
+```
+
+### 方法2: シンボリックリンク
 
 ```bash
-git clone <repo-url> ~/claude-dev-skills
+git clone https://github.com/yamatechi/claude-dev-skills.git ~/claude-dev-skills
 ln -s ~/claude-dev-skills/skills/* ~/.claude/skills/
 ```
 
-### 方法2: プロジェクト固有
+### 方法3: プロジェクト固有
 
 ```bash
 cp -r skills/* <your-project>/.claude/skills/
