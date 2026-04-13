@@ -11,13 +11,29 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 # review-implements: 実装レビュースキル
 
 実装コードの品質・仕様適合性をレビューする。
+ドキュメントは `.dev-docs/<feature-name>/` から読み込む。
+
+## Step 0: 対象ディレクトリの特定
+
+```
+IF $ARGUMENTS にfeature名が指定されている
+  → .dev-docs/<feature-name>/ を使用
+ELSE IF .dev-docs/ 配下にディレクトリが1つだけ存在する
+  → そのディレクトリを使用
+ELSE IF .dev-docs/ 配下にディレクトリが複数存在する
+  → ユーザーに対象を選択してもらう
+ELSE
+  → エラー: 「仕様書が見つかりません。先に create-spec を実行してください」
+```
+
+以降、対象ディレクトリを `$DIR` と表記する。
 
 ## 手順
 
 ### Step 1: 入力の読み込み
 
-1. `docs/spec.md` を読み込む（存在すれば）
-2. `docs/tasks.md` を読み込む（存在すれば）
+1. `$DIR/spec.md` を読み込む（存在すれば）
+2. `$DIR/tasks.md` を読み込む（存在すれば）
 3. テストコードを読み込む（存在すれば）
 4. 実装コードを読み込む
 5. `git diff` で変更差分を確認する
@@ -58,7 +74,7 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 
 ### Step 5: レビューレポートの出力
 
-以下のフォーマットでレポートを出力する。**チャットに表示すると同時に `docs/review-report.md` にも保存する。**
+以下のフォーマットでレポートを出力する。**チャットに表示すると同時に `$DIR/review-report.md` にも保存する。**
 
 ```markdown
 # レビューレポート

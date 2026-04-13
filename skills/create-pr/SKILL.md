@@ -11,12 +11,28 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 # create-pr: Pull Request作成スキル
 
 実装内容からPull Requestを作成する。
+ドキュメントは `.dev-docs/<feature-name>/` から読み込む。
+
+## Step 0: 対象ディレクトリの特定
+
+```
+IF $ARGUMENTS にfeature名が指定されている
+  → .dev-docs/<feature-name>/ を使用
+ELSE IF .dev-docs/ 配下にディレクトリが1つだけ存在する
+  → そのディレクトリを使用
+ELSE IF .dev-docs/ 配下にディレクトリが複数存在する
+  → ユーザーに対象を選択してもらう
+ELSE
+  → エラー: 「仕様書が見つかりません。先に create-spec を実行してください」
+```
+
+以降、対象ディレクトリを `$DIR` と表記する。
 
 ## 手順
 
 ### Step 1: レビューレポートの確認
 
-1. `docs/review-report.md` を読み込む
+1. `$DIR/review-report.md` を読み込む
 2. 総合判定を確認する:
    - **承認済み** → Step 2 へ進む
    - **承認済みでない** → 「レビューが未承認です（総合判定: 〇〇）。続行しますか？」とユーザーに確認する
@@ -24,8 +40,8 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 
 ### Step 2: 情報収集
 
-1. `docs/prd.md`, `docs/spec.md` を読み込む（存在すれば）
-2. `docs/tasks.md` を読み込み、完了状態を確認する
+1. `$DIR/prd.md`, `$DIR/spec.md` を読み込む（存在すれば）
+2. `$DIR/tasks.md` を読み込み、完了状態を確認する
 3. `git log` でコミット履歴を取得する
 4. `git diff` で変更差分を取得する
 5. ベースブランチは `main` をデフォルトとする。異なる場合はユーザーに確認する

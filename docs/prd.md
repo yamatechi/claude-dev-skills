@@ -40,7 +40,7 @@ spec → test-gen → implement → review → pr
 | スキル | 前提条件 |
 |--------|---------|
 | `create-spec` | なし（最初に実行可能） |
-| `create-tests` | 仕様書（`docs/spec.md`）が存在するか、ユーザーが口頭で仕様を伝えること |
+| `create-tests` | 仕様書（`.dev-docs/spec.md`）が存在するか、ユーザーが口頭で仕様を伝えること |
 | `implement-code` | テストコードが存在すること。仕様書があれば参照する |
 | `review-implements` | 実装コードが存在すること。仕様書・テストがあれば参照する |
 | `create-pr` | ブランチにコミットが存在すること。`review-implements` が承認済みであること（推奨） |
@@ -63,10 +63,10 @@ spec → test-gen → implement → review → pr
 **入力**: ユーザーの要望（自然言語）
 
 **出力**:
-- `docs/prd.md` — プロダクト要件定義書
-- `docs/spec.md` — 技術仕様書
-- `docs/plan.md` — 実装計画
-- `docs/tasks.md` — タスク一覧
+- `.dev-docs/prd.md` — プロダクト要件定義書
+- `.dev-docs/spec.md` — 技術仕様書
+- `.dev-docs/plan.md` — 実装計画
+- `.dev-docs/tasks.md` — タスク一覧
 
 **動作（新規作成モード）**:
 1. ユーザーの要望をヒアリング・整理
@@ -91,7 +91,7 @@ spec → test-gen → implement → review → pr
 
 **目的**: 仕様書からテストコードを生成する（TDDのRed Phase）
 
-**入力**: 仕様書（`docs/spec.md`）またはユーザー指定のドキュメント
+**入力**: 仕様書（`.dev-docs/spec.md`）またはユーザー指定のドキュメント
 
 **出力**: テストコード
 
@@ -124,7 +124,7 @@ spec → test-gen → implement → review → pr
 4. テストを実行して全てPassすることを確認
 5. リファクタリング（Refactor）
 6. テストを再実行してPassを維持
-7. `docs/tasks.md` の該当タスクのチェックボックスを完了に更新する
+7. `.dev-docs/tasks.md` の該当タスクのチェックボックスを完了に更新する
 8. タスク単位でコミット
 
 **コミット戦略**:
@@ -151,7 +151,7 @@ spec → test-gen → implement → review → pr
 
 **出力**:
 - チャット上にマークダウン形式でレビューレポートを表示
-- `docs/review-report.md` にレビューレポートを保存（`create-pr` スキル等が参照するため）
+- `.dev-docs/review-report.md` にレビューレポートを保存（`create-pr` スキル等が参照するため）
 
 **レビューレポート構造**:
 
@@ -211,7 +211,7 @@ spec → test-gen → implement → review → pr
 **動作**:
 1. `review-implements` の総合判定を確認し、承認済みかチェックする
    - 承認済みでない場合: 警告を表示し、続行するかユーザーに確認する
-2. 仕様書（`docs/prd.md`, `docs/spec.md`）・タスク一覧（`docs/tasks.md`）を読み込む
+2. 仕様書（`.dev-docs/prd.md`, `.dev-docs/spec.md`）・タスク一覧（`.dev-docs/tasks.md`）を読み込む
 3. `git log` と `git diff` でブランチの変更内容を把握する
 4. PRタイトルを生成（70文字以内、Conventional Commitsプレフィックス付き）
 5. PR本文を生成（→「PR本文テンプレート」参照）
@@ -333,11 +333,11 @@ skills/
 
 スキル間のデータ受け渡しはファイルシステム経由で行う。各スキルは所定のパスのファイルを読み書きすることで連携する:
 
-- `create-spec` → `docs/` 配下のドキュメント → `create-tests` が読む
+- `create-spec` → `.dev-docs/` 配下のドキュメント → `create-tests` が読む
 - `create-tests` → テストコード → `implement-code` が読む
 - `implement-code` → 実装コード → `review-implements` が読む
-- `review-implements` → レビューレポート（チャット出力 + `docs/review-report.md`） → ユーザーが `implement-code` または `create-tests` に指示
-- `review-implements`（承認） → `create-pr` が仕様書・タスク一覧・`docs/review-report.md`・git差分を読んでPR作成
+- `review-implements` → レビューレポート（チャット出力 + `.dev-docs/review-report.md`） → ユーザーが `implement-code` または `create-tests` に指示
+- `review-implements`（承認） → `create-pr` が仕様書・タスク一覧・`.dev-docs/review-report.md`・git差分を読んでPR作成
 - `orchestrator` → 上記フロー全体を自動制御。プロジェクト状態を分析し開始ポイントを判定、各スキルを順次実行する
 
 ## 技術要件
