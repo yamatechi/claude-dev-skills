@@ -1,12 +1,28 @@
 {
   "name": "claude-dev-skills",
   "description": "仕様駆動開発とテスト駆動開発のワークフローを自動化するClaude Codeプラグイン",
+  "owner": {
+    "name": "yamatechi"
+  },
   "plugins": [
     {
       "name": "claude-dev-skills",
       "description": "仕様駆動開発・テスト駆動開発ワークフロー（spec→tests→implement→review→PR）を自動化する6つのスキルセット",
       "version": "1.0.0",
-      "path": "."
+      "source": "./",
+      "category": "development",
+      "author": {
+        "name": "yamatechi"
+      },
+      "keywords": [
+        "workflow",
+        "tdd",
+        "spec-driven",
+        "automation",
+        "testing",
+        "code-review",
+        "pull-request"
+      ]
     }
   ]
 }
