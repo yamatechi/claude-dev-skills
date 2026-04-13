@@ -1,10 +1,9 @@
 ---
 name: orchestrater
 description: >
-  Orchestrate the full development workflow (spec → tests → implement → review → PR) automatically.
-  Analyzes user input and project state to determine the starting point, confirms the plan with the user,
-  then executes the entire flow end-to-end without further intervention.
-  Triggers: "作って", "開発して", "機能を追加して", "実装して欲しい", "これ作れる？"
+  開発フロー全体（仕様→テスト→実装→レビュー→PR）を自動オーケストレーションする。
+  ユーザーの入力とプロジェクト状態から開始ポイントを判定し、実行計画を確認後、全自動で実行する。
+  トリガー: "作って", "開発して", "機能を追加して", "実装して欲しい", "これ作れる？"
 user-invocable: true
 allowed-tools: Read Grep Glob Bash Write Edit Agent
 ---

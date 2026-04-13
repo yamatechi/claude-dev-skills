@@ -1,9 +1,9 @@
 ---
 name: create-pr
 description: >
-  Create a GitHub Pull Request from implementation with auto-generated title, body, labels, and reviewers.
-  Use when implementation and review are complete and ready to submit a PR.
-  Triggers: "PRを作って", "プルリクを出して", "PR作成して"
+  実装内容からGitHub Pull Requestを作成する。タイトル・本文・ラベル・レビュアーを自動生成する。
+  実装とレビューが完了し、PRを提出する準備ができた時に使用する。
+  トリガー: "PRを作って", "プルリクを出して", "PR作成して"
 user-invocable: true
 allowed-tools: Read Grep Glob Bash Write Edit Agent
 ---

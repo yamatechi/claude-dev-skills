@@ -1,9 +1,9 @@
 ---
 name: implement-code
 description: >
-  Implement code to pass existing tests (TDD Green→Refactor Phase).
-  Use when implementing features after tests are written, fixing failing tests, or applying review feedback.
-  Triggers: "実装して", "テストを通して", "レビュー指摘を修正して", "Greenにして"
+  既存テストが通るようにコードを実装する（TDDのGreen→Refactor Phase）。
+  テスト作成後の実装、失敗テストの修正、レビュー指摘の反映時に使用する。
+  トリガー: "実装して", "テストを通して", "レビュー指摘を修正して", "Greenにして"
 user-invocable: true
 allowed-tools: Read Grep Glob Bash Write Edit Agent
 ---
