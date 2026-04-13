@@ -1,0 +1,151 @@
+---
+name: orchestrater
+description: >
+  Orchestrate the full development workflow (spec → tests → implement → review → PR) automatically.
+  Analyzes user input and project state to determine the starting point, confirms the plan with the user,
+  then executes the entire flow end-to-end without further intervention.
+  Triggers: "作って", "開発して", "機能を追加して", "実装して欲しい", "これ作れる？"
+user-invocable: true
+allowed-tools: Read Grep Glob Bash Write Edit Agent
+---
+
+# orchestrater: 開発フローオーケストレーションスキル
+
+ユーザーの入力とプロジェクトの状態から最適な開発フローを判断し、確認後に全自動で実行する。
+
+## 手順
+
+### Step 1: プロジェクト状態の分析
+
+以下を調査してプロジェクトの現在の状態を把握する:
+
+| チェック項目 | 確認方法 |
+|-------------|---------|
+| 仕様書の有無 | `docs/prd.md`, `docs/spec.md`, `docs/plan.md`, `docs/tasks.md` の存在確認 |
+| テストコードの有無 | テストディレクトリ・テストファイルの存在確認 |
+| 実装コードの有無 | ソースコードの存在確認（テスト以外） |
+| レビュー状態 | `docs/review-report.md` の存在と総合判定の確認 |
+| ブランチ状態 | `git status`, `git log` でコミット・変更の有無を確認 |
+| 未完了タスク | `docs/tasks.md` の未チェックタスクの確認 |
+
+### Step 2: 開始ポイントの判定
+
+プロジェクト状態から開始スキルを判定する:
+
+```
+IF 仕様書が存在しない
+  → create-spec から開始（フルフロー）
+
+ELSE IF 未完了タスクがあり、対応するテストが存在しない
+  → create-tests から開始
+
+ELSE IF 未完了タスクがあり、テストはあるが実装がない（テストがFail）
+  → implement-code から開始
+
+ELSE IF 実装済みだが review-report.md が存在しない
+  → review-implements から開始
+
+ELSE IF review-report.md が存在し、総合判定が「承認」
+  → create-pr から開始
+
+ELSE IF review-report.md が存在し、総合判定が「要修正」または「要再設計」
+  → implement-code（レビュー指摘反映モード）から開始
+
+ELSE
+  → ユーザーに状況を説明し、どこから始めるか確認する
+```
+
+### Step 3: 実行計画の提示とユーザー確認
+
+判定結果をもとに、以下の形式で実行計画をユーザーに提示する:
+
+```
+📋 開発フロー実行計画
+
+要望: <ユーザーの入力を要約>
+現在の状態: <プロジェクト状態の要約>
+
+実行するスキル:
+  1. create-spec — 仕様書・タスク一覧を作成
+  2. create-tests — テストコードを生成（Red Phase）
+  3. implement-code — テストが通る実装（Green→Refactor）
+  4. review-implements — コードレビュー
+  5. create-pr — Pull Request作成
+
+この計画で進めてよいですか？
+```
+
+- ユーザーが承認 → Step 4 へ
+- ユーザーが修正を要望 → 計画を調整して再提示
+- ユーザーがキャンセル → 終了
+
+### Step 4: フローの全自動実行
+
+承認された計画に従い、スキルを順番に実行する。各スキルの実行内容は対応する SKILL.md の手順に従う。
+
+#### 4a. create-spec の実行
+
+`create-spec` スキルの手順に従ってドキュメントを生成する:
+- PRD → 仕様書 → 実装計画 → タスク一覧の順に生成
+- 各ドキュメント生成後、ユーザー確認は**スキップ**する（Step 3 で全体計画を承認済みのため）
+- ただし、要件に不明点がある場合のみユーザーに質問する
+
+#### 4b. create-tests の実行
+
+`create-tests` スキルの手順に従ってテストコードを生成する:
+- 技術スタック・テストFWを自動検出
+- タスク一覧のタスクごとにテストを生成
+- テスト実行で全てFailすることを確認（Red Phase）
+- Failしない場合は自動で修正を試みる
+
+#### 4c. implement-code の実行
+
+`implement-code` スキルの手順に従って実装する:
+- 未完了タスクを依存順に処理
+- タスクごとに: 実装 → テスト実行（Green） → リファクタリング → テスト再実行 → タスク完了記録 → コミット
+- テストがPassしない場合は段階的アプローチで修正を試行（3段階でダメならユーザーに報告して判断を仰ぐ）
+
+#### 4d. review-implements の実行
+
+`review-implements` スキルの手順に従ってレビューする:
+- 6観点でレビュー実行
+- レビューレポートをチャット表示 + `docs/review-report.md` に保存
+
+**レビュー結果による分岐:**
+- **承認** → 4e へ進む
+- **要修正**（Warning のみ） → `implement-code` のレビュー指摘反映モードで自動修正 → 再レビュー（4d に戻る。最大3回まで）
+- **要再設計**（Critical あり） → ユーザーに報告し、対応方針を相談する（自動実行を中断）
+
+#### 4e. create-pr の実行
+
+`create-pr` スキルの手順に従ってPRを作成する:
+- PRタイトル・本文を自動生成
+- ラベル・レビュアーを設定
+- リモートにプッシュ
+- PR作成
+
+### Step 5: 完了報告
+
+全フロー完了後、以下を報告する:
+
+```
+✅ 開発フロー完了
+
+作成したドキュメント:
+  - docs/prd.md
+  - docs/spec.md
+  - docs/plan.md
+  - docs/tasks.md
+  - docs/review-report.md
+
+実装:
+  - <完了タスク一覧>
+
+PR: <PR URL>
+```
+
+## 中断・再開
+
+フロー実行中にエラーや中断が発生した場合:
+- `docs/tasks.md` のチェックボックスで進捗を追跡できる
+- 再度 `orchestrater` を実行すると、Step 1 の状態分析から再開ポイントを自動判定する
