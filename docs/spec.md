@@ -9,6 +9,8 @@
 ```
 claude-dev-skills/
 ├── skills/
+│   ├── orchestrator/
+│   │   └── SKILL.md
 │   ├── create-spec/
 │   │   └── SKILL.md
 │   ├── create-tests/
@@ -54,6 +56,20 @@ allowed-tools: <使用可能なツール>
 ```
 
 ### スキル別フロントマター定義
+
+#### orchestrator
+
+```yaml
+---
+name: orchestrator
+description: >
+  開発フロー全体（仕様→テスト→実装→レビュー→PR）を自動オーケストレーションする。
+  ユーザーの入力とプロジェクト状態から開始ポイントを判定し、実行計画を確認後、全自動で実行する。
+  トリガー: "作って", "開発して", "機能を追加して", "実装して欲しい", "これ作れる？"
+user-invocable: true
+allowed-tools: Read Grep Glob Bash Write Edit Agent
+---
+```
 
 #### create-spec
 
@@ -126,6 +142,19 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 ```
 
 ## 3. スキル別プロンプト仕様
+
+### 3.0 orchestrator スキル（メタスキル）
+
+5つの個別スキルを自動的に連携・実行するオーケストレーションスキル。詳細は `skills/orchestrator/SKILL.md` を参照。
+
+**主な機能:**
+- プロジェクト状態の分析（仕様書/テスト/実装/レビューの有無 + テスト実行結果）
+- 開始ポイントの自動判定（6パターン）
+- 実行計画のユーザー確認
+- フローの自動実行（確認ポイントを明示した上で自動進行）
+- レビュー指摘の適切な分岐（テスト不足→create-tests、コード不備→implement-code）
+- 中断・再開対応（tasks.mdの進捗から再開ポイントを自動判定）
+
 
 ### 3.1 create-spec スキル
 

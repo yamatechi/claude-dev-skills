@@ -6,7 +6,7 @@
 
 | スキル | 説明 | コマンド |
 |--------|------|---------|
-| **orchestrater** | **開発フロー全体を自動オーケストレーション** | **`/orchestrater`** |
+| **orchestrator** | **開発フロー全体を自動オーケストレーション** | **`/orchestrator`** |
 | create-spec | PRD・仕様書・実装計画・タスク一覧の作成 | `/create-spec` |
 | create-tests | 仕様書からテストコードを生成（TDD Red Phase） | `/create-tests` |
 | implement-code | テストが通るようにコードを実装（TDD Green→Refactor） | `/implement-code` |
@@ -17,10 +17,10 @@
 
 ### 全自動（推奨）
 
-`/orchestrater` で要望を伝えるだけ。プロジェクトの状態を分析し、最適なフローを提案、承認後に全自動で実行する。
+`/orchestrator` で要望を伝えるだけ。プロジェクトの状態を分析し、最適なフローを提案、承認後に全自動で実行する。
 
 ```
-/orchestrater ログイン機能を作って
+/orchestrator ログイン機能を作って
 ```
 
 ### 個別スキル

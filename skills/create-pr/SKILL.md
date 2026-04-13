@@ -84,11 +84,13 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 2. プッシュされていない場合: 「リモートにプッシュしますか？」とユーザーに確認する
 3. 確認後 `git push -u origin <branch>` を実行する
 
-### Step 8: PR作成
+### Step 8: 既存PRの確認とPR作成
 
-1. `gh pr create --title "..." --body "..." --label "..." --reviewer "..."` でPR作成する
+1. `gh pr list --head <branch>` で既存PRの有無を確認する
 2. 既存PRがある場合: 「既存のPR #<number> があります。本文を更新しますか？」とユーザーに確認する
    - 更新の場合: `gh pr edit <number> --title "..." --body "..."` を実行する
+   - 更新しない場合: 終了する
+3. 既存PRがない場合: `gh pr create --title "..." --body "..." --label "..." --reviewer "..."` でPR作成する
 
 ### Step 9: 結果の報告
 
@@ -97,7 +99,7 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 ## 異常系フロー
 
 - **`gh` CLI が未インストール/未認証の場合**: エラーメッセージを表示し、以下を案内する:
-  - インストール: `brew install gh`
+  - インストール: https://cli.github.com/ の手順に従う（macOS: `brew install gh`, Linux: `sudo apt install gh` 等）
   - 認証: `gh auth login`
 - **リモートリポジトリが設定されていない場合**: エラーメッセージを表示する
 - **ブランチにコミットがない場合**: エラーメッセージを表示する
