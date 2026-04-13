@@ -237,17 +237,32 @@ ELSE
 
 #### 4e. create-pr の実行
 
-`create-pr` スキルの手順に従ってPRを作成する:
+`$DIR/tasks.md` のPR戦略に基づいてPRを作成する。
+
+**単一PRの場合:**
+- `create-pr` スキルの手順に従ってPRを作成する
+- `feat/<feature>` → `main` のPRを1つ作成する
+
+**分割PRの場合:**
+- tasks.mdのPRグループごとに以下を実行する:
+  1. `feat/<feature>/<具体名>` ブランチを `feat/<feature>` から作成する
+  2. 対応するタスクのコミットを含める
+  3. `feat/<feature>/<具体名>` → `feat/<feature>` の子PRを作成する
+  4. 子PRをマージする
+  5. 次のPRグループへ進む
+- 全子PRのマージ完了後、`feat/<feature>` → `main` の集約PRを作成する
+- 集約PRの本文には子PR一覧へのリンクを含める
+
+**共通:**
 - PRタイトル・本文を自動生成
 - ラベルを自動設定
 - レビュアーは `.github/CODEOWNERS` から自動設定、なければユーザーに確認
-- リモートにプッシュ
-- PR作成
 
 ### Step 5: 完了報告
 
 全フロー完了後、以下を報告する:
 
+**単一PRの場合:**
 ```
 ✅ 開発フロー完了
 
@@ -263,6 +278,28 @@ ELSE
   - <完了タスク一覧>
 
 PR: <PR URL>
+```
+
+**分割PRの場合:**
+```
+✅ 開発フロー完了
+
+対象: $DIR
+作成したドキュメント:
+  - $DIR/prd.md
+  - $DIR/spec.md
+  - $DIR/plan.md
+  - $DIR/tasks.md
+  - $DIR/review-report.md
+
+実装:
+  - <完了タスク一覧>
+
+PR:
+  - PR1: <名前> — <子PR URL>（マージ済み）
+  - PR2: <名前> — <子PR URL>（マージ済み）
+  - ...
+  - 集約PR: <集約PR URL>
 ```
 
 ## 中断・再開
