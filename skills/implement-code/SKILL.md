@@ -11,11 +11,27 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 # implement-code: 実装コードスキル
 
 テストが通るようにコードを実装する（TDDのGreen→Refactor Phase）。
+ドキュメントは `.dev-docs/<feature-name>/` から読み込む。
+
+## Step 0: 対象ディレクトリの特定
+
+```
+IF $ARGUMENTS にfeature名が指定されている
+  → .dev-docs/<feature-name>/ を使用
+ELSE IF .dev-docs/ 配下にディレクトリが1つだけ存在する
+  → そのディレクトリを使用
+ELSE IF .dev-docs/ 配下にディレクトリが複数存在する
+  → ユーザーに対象を選択してもらう
+ELSE
+  → エラー: 「仕様書が見つかりません。先に create-spec を実行してください」
+```
+
+以降、対象ディレクトリを `$DIR` と表記する。
 
 ## モード判定
 
 ```
-IF .dev-docs/review-report.md が存在する AND ユーザーが「レビュー指摘を修正して」等と指示
+IF $DIR/review-report.md が存在する AND ユーザーが「レビュー指摘を修正して」等と指示
   → レビュー指摘反映モード
 ELSE
   → 通常実装モード
@@ -27,15 +43,15 @@ ELSE
 
 ### Step 1: 入力の読み込み
 
-1. `.dev-docs/spec.md` を読み込む（存在すれば）
-2. `.dev-docs/plan.md` を読み込む（存在すれば — アーキテクチャ決定・設計方針を把握する）
-3. `.dev-docs/tasks.md` を読み込む（存在すれば）
+1. `$DIR/spec.md` を読み込む（存在すれば）
+2. `$DIR/plan.md` を読み込む（存在すれば — アーキテクチャ決定・設計方針を把握する）
+3. `$DIR/tasks.md` を読み込む（存在すれば）
 4. テストコードを読み込む
 
 ### Step 2: 未完了タスクの取得
 
-`.dev-docs/tasks.md` から未完了タスク（`- [ ]`）を依存順に取得する。
-`.dev-docs/tasks.md` が存在しない場合は、テストファイルから実装対象を特定する。
+`$DIR/tasks.md` から未完了タスク（`- [ ]`）を依存順に取得する。
+`$DIR/tasks.md` が存在しない場合は、テストファイルから実装対象を特定する。
 
 ### Step 3: タスクごとの実装
 
@@ -74,7 +90,7 @@ ELSE
 
 #### 3f. タスク完了の記録
 
-`.dev-docs/tasks.md` の該当タスクのチェックボックスを `[x]` に更新する。
+`$DIR/tasks.md` の該当タスクのチェックボックスを `[x]` に更新する。
 
 #### 3g. コミット
 
@@ -102,7 +118,7 @@ ELSE
 
 ### Step 1: レビューレポートの読み込み
 
-`.dev-docs/review-report.md` を読み込む。
+`$DIR/review-report.md` を読み込む。
 
 ### Step 2: 指摘の抽出
 
@@ -122,4 +138,4 @@ ELSE
 fix: レビュー指摘の修正
 ```
 
-注意: `.dev-docs/review-report.md` は上書きしない（次の `review-implements` で再生成される）。
+注意: `$DIR/review-report.md` は上書きしない（次の `review-implements` で再生成される）。

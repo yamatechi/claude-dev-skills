@@ -11,8 +11,28 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 # orchestrator: 開発フローオーケストレーションスキル
 
 ユーザーの入力とプロジェクトの状態から最適な開発フローを判断し、確認後に自動で実行する。
+ドキュメントは `.dev-docs/<feature-name>/` に格納する。
 
 ## 手順
+
+### Step 0: 対象ディレクトリの特定
+
+```
+IF $ARGUMENTS にfeature名が指定されている
+  → .dev-docs/<feature-name>/ を使用
+ELSE IF .dev-docs/ 配下にディレクトリが1つだけ存在する
+  → そのディレクトリを使用
+ELSE IF .dev-docs/ 配下にディレクトリが複数存在する
+  → ユーザーに対象を選択してもらう（または新規作成）
+ELSE
+  → 新規作成（Step 1 完了後にfeature名を自動生成）
+```
+
+feature名の自動生成ルール:
+- ユーザーの要望からkebab-caseで生成する（例: 「ログイン機能」→ `login-feature`）
+- 英数字とハイフンのみ使用、30文字以内
+
+以降、対象ディレクトリを `$DIR` と表記する（例: `.dev-docs/login-feature/`）。
 
 ### Step 1: プロジェクト状態の分析
 
@@ -20,20 +40,20 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 
 | チェック項目 | 確認方法 |
 |-------------|---------|
-| 仕様書の有無 | `.dev-docs/prd.md`, `.dev-docs/spec.md`, `.dev-docs/plan.md`, `.dev-docs/tasks.md` の存在確認 |
+| 仕様書の有無 | `$DIR/prd.md`, `$DIR/spec.md`, `$DIR/plan.md`, `$DIR/tasks.md` の存在確認 |
 | テストコードの有無 | テストディレクトリ・テストファイルの存在確認 |
 | テスト実行結果 | テストを実行してPass/Failの状態を確認 |
 | 実装コードの有無 | ソースコードの存在確認（テスト以外） |
-| レビュー状態 | `.dev-docs/review-report.md` の存在と総合判定の確認 |
+| レビュー状態 | `$DIR/review-report.md` の存在と総合判定の確認 |
 | ブランチ状態 | `git status`, `git log` でコミット・変更の有無を確認 |
-| 未完了タスク | `.dev-docs/tasks.md` の未チェックタスクの確認 |
+| 未完了タスク | `$DIR/tasks.md` の未チェックタスクの確認 |
 
 ### Step 2: 開始ポイントの判定
 
 プロジェクト状態から開始スキルを判定する:
 
 ```
-IF 仕様書が存在しない
+IF $DIR が存在しない OR 仕様書が存在しない
   → create-spec から開始（フルフロー）
 
 ELSE IF 未完了タスクがあり、対応するテストが存在しない
@@ -42,13 +62,13 @@ ELSE IF 未完了タスクがあり、対応するテストが存在しない
 ELSE IF 未完了タスクがあり、テストはあるがテスト実行結果がFailしている
   → implement-code から開始
 
-ELSE IF 実装済みだが .dev-docs/review-report.md が存在しない
+ELSE IF 実装済みだが $DIR/review-report.md が存在しない
   → review-implements から開始
 
-ELSE IF .dev-docs/review-report.md が存在し、総合判定が「承認」
+ELSE IF $DIR/review-report.md が存在し、総合判定が「承認」
   → create-pr から開始
 
-ELSE IF .dev-docs/review-report.md が存在し、総合判定が「要修正」または「要再設計」
+ELSE IF $DIR/review-report.md が存在し、総合判定が「要修正」または「要再設計」
   → implement-code（レビュー指摘反映モード）から開始
 
 ELSE
@@ -63,6 +83,7 @@ ELSE
 📋 開発フロー実行計画
 
 要望: <ユーザーの入力を要約>
+対象: $DIR
 現在の状態: <プロジェクト状態の要約>
 
 実行するスキル:
@@ -85,6 +106,7 @@ ELSE
 ### Step 4: フローの自動実行
 
 承認された計画に従い、スキルを順番に実行する。各スキルの実行内容は対応する SKILL.md の手順に従う。
+全スキルに `$DIR` を引き継いで実行する。
 
 **自動実行のルール:**
 - 基本的にユーザー確認なしで進行する
@@ -96,7 +118,7 @@ ELSE
 
 #### 4a. create-spec の実行
 
-`create-spec` スキルの手順に従ってドキュメントを生成する:
+`create-spec` スキルの手順に従ってドキュメントを `$DIR` に生成する:
 - PRD → 仕様書 → 実装計画 → タスク一覧の順に生成
 - 各ドキュメント生成後のユーザー確認はスキップする（Step 3 で全体計画を承認済みのため）
 - ただし、要件に不明点がある場合のみユーザーに質問する
@@ -121,7 +143,7 @@ ELSE
 
 `review-implements` スキルの手順に従ってレビューする:
 - 6観点でレビュー実行
-- レビューレポートをチャット表示 + `.dev-docs/review-report.md` に保存
+- レビューレポートをチャット表示 + `$DIR/review-report.md` に保存
 
 **レビュー結果による分岐:**
 - **承認** → 4e へ進む
@@ -147,12 +169,13 @@ ELSE
 ```
 ✅ 開発フロー完了
 
+対象: $DIR
 作成したドキュメント:
-  - .dev-docs/prd.md
-  - .dev-docs/spec.md
-  - .dev-docs/plan.md
-  - .dev-docs/tasks.md
-  - .dev-docs/review-report.md
+  - $DIR/prd.md
+  - $DIR/spec.md
+  - $DIR/plan.md
+  - $DIR/tasks.md
+  - $DIR/review-report.md
 
 実装:
   - <完了タスク一覧>
@@ -163,5 +186,5 @@ PR: <PR URL>
 ## 中断・再開
 
 フロー実行中にエラーや中断が発生した場合:
-- `.dev-docs/tasks.md` のチェックボックスで進捗を追跡できる
-- 再度 `orchestrator` を実行すると、Step 1 の状態分析から再開ポイントを自動判定する
+- `$DIR/tasks.md` のチェックボックスで進捗を追跡できる
+- 再度 `orchestrator` を実行すると、Step 0 で対象ディレクトリを特定し、Step 1 の状態分析から再開ポイントを自動判定する
