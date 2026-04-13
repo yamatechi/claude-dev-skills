@@ -1,9 +1,9 @@
 ---
 name: review-implements
 description: >
-  Review implementation code for quality, spec compliance, and test coverage.
-  Use when code review is needed, checking implementation quality, or validating against specifications.
-  Triggers: "レビューして", "コードを確認して", "品質チェックして", "実装を確認して"
+  実装コードの品質・仕様適合性・テストカバレッジをレビューする。
+  コードレビュー、実装品質の確認、仕様との照合時に使用する。
+  トリガー: "レビューして", "コードを確認して", "品質チェックして", "実装を確認して"
 user-invocable: true
 allowed-tools: Read Grep Glob Bash Write Edit Agent
 ---

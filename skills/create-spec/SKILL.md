@@ -1,10 +1,9 @@
 ---
 name: create-spec
 description: >
-  Create project documents (PRD, spec, plan, tasks) from user requirements.
-  Use when starting a new feature, planning implementation, or documenting requirements.
-  Also updates existing documents when changes are needed.
-  Triggers: "仕様書を作って", "PRDを書いて", "設計して", "要件を整理して", "仕様を更新して"
+  ユーザーの要望からプロジェクトドキュメント（PRD・仕様書・実装計画・タスク一覧）を作成する。
+  新機能の開始、実装の計画、要件の整理、既存ドキュメントの更新時に使用する。
+  トリガー: "仕様書を作って", "PRDを書いて", "設計して", "要件を整理して", "仕様を更新して"
 user-invocable: true
 allowed-tools: Read Grep Glob Bash Write Edit Agent
 ---

@@ -1,9 +1,9 @@
 ---
 name: create-tests
 description: >
-  Generate test code from specifications (TDD Red Phase).
-  Use when creating tests before implementation, adding test coverage, or starting TDD workflow.
-  Triggers: "テストを書いて", "テストを生成して", "TDDで始めて", "テストカバレッジを追加"
+  仕様書からテストコードを生成する（TDDのRed Phase）。
+  実装前のテスト作成、テストカバレッジの追加、TDDワークフローの開始時に使用する。
+  トリガー: "テストを書いて", "テストを生成して", "TDDで始めて", "テストカバレッジを追加"
 user-invocable: true
 allowed-tools: Read Grep Glob Bash Write Edit Agent
 ---
