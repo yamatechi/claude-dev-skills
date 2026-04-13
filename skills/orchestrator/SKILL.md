@@ -20,13 +20,13 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 
 | チェック項目 | 確認方法 |
 |-------------|---------|
-| 仕様書の有無 | `docs/prd.md`, `docs/spec.md`, `docs/plan.md`, `docs/tasks.md` の存在確認 |
+| 仕様書の有無 | `.dev-docs/prd.md`, `.dev-docs/spec.md`, `.dev-docs/plan.md`, `.dev-docs/tasks.md` の存在確認 |
 | テストコードの有無 | テストディレクトリ・テストファイルの存在確認 |
 | テスト実行結果 | テストを実行してPass/Failの状態を確認 |
 | 実装コードの有無 | ソースコードの存在確認（テスト以外） |
-| レビュー状態 | `docs/review-report.md` の存在と総合判定の確認 |
+| レビュー状態 | `.dev-docs/review-report.md` の存在と総合判定の確認 |
 | ブランチ状態 | `git status`, `git log` でコミット・変更の有無を確認 |
-| 未完了タスク | `docs/tasks.md` の未チェックタスクの確認 |
+| 未完了タスク | `.dev-docs/tasks.md` の未チェックタスクの確認 |
 
 ### Step 2: 開始ポイントの判定
 
@@ -42,13 +42,13 @@ ELSE IF 未完了タスクがあり、対応するテストが存在しない
 ELSE IF 未完了タスクがあり、テストはあるがテスト実行結果がFailしている
   → implement-code から開始
 
-ELSE IF 実装済みだが docs/review-report.md が存在しない
+ELSE IF 実装済みだが .dev-docs/review-report.md が存在しない
   → review-implements から開始
 
-ELSE IF docs/review-report.md が存在し、総合判定が「承認」
+ELSE IF .dev-docs/review-report.md が存在し、総合判定が「承認」
   → create-pr から開始
 
-ELSE IF docs/review-report.md が存在し、総合判定が「要修正」または「要再設計」
+ELSE IF .dev-docs/review-report.md が存在し、総合判定が「要修正」または「要再設計」
   → implement-code（レビュー指摘反映モード）から開始
 
 ELSE
@@ -121,7 +121,7 @@ ELSE
 
 `review-implements` スキルの手順に従ってレビューする:
 - 6観点でレビュー実行
-- レビューレポートをチャット表示 + `docs/review-report.md` に保存
+- レビューレポートをチャット表示 + `.dev-docs/review-report.md` に保存
 
 **レビュー結果による分岐:**
 - **承認** → 4e へ進む
@@ -148,11 +148,11 @@ ELSE
 ✅ 開発フロー完了
 
 作成したドキュメント:
-  - docs/prd.md
-  - docs/spec.md
-  - docs/plan.md
-  - docs/tasks.md
-  - docs/review-report.md
+  - .dev-docs/prd.md
+  - .dev-docs/spec.md
+  - .dev-docs/plan.md
+  - .dev-docs/tasks.md
+  - .dev-docs/review-report.md
 
 実装:
   - <完了タスク一覧>
@@ -163,5 +163,5 @@ PR: <PR URL>
 ## 中断・再開
 
 フロー実行中にエラーや中断が発生した場合:
-- `docs/tasks.md` のチェックボックスで進捗を追跡できる
+- `.dev-docs/tasks.md` のチェックボックスで進捗を追跡できる
 - 再度 `orchestrator` を実行すると、Step 1 の状態分析から再開ポイントを自動判定する

@@ -16,9 +16,9 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 
 ### Step 1: 仕様書の読み込み
 
-1. `docs/spec.md` を読み込む
+1. `.dev-docs/spec.md` を読み込む
    - 存在しない場合: ユーザーに仕様を口頭で伝えてもらう
-2. `docs/tasks.md` を読み込む（存在すれば）
+2. `.dev-docs/tasks.md` を読み込む（存在すれば）
    - タスク一覧からテスト対象のタスクを特定する
 
 ### Step 2: 技術スタックの検出
@@ -85,7 +85,7 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 
 ### Step 5: テストケースの設計
 
-`docs/tasks.md` のタスク一覧を参照し、タスクごとにテストケースを設計する:
+`.dev-docs/tasks.md` のタスク一覧を参照し、タスクごとにテストケースを設計する:
 
 - **正常系**: 期待される入出力の検証
 - **異常系**: エラー条件・バリデーション失敗の検証

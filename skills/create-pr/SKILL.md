@@ -16,7 +16,7 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 
 ### Step 1: レビューレポートの確認
 
-1. `docs/review-report.md` を読み込む
+1. `.dev-docs/review-report.md` を読み込む
 2. 総合判定を確認する:
    - **承認済み** → Step 2 へ進む
    - **承認済みでない** → 「レビューが未承認です（総合判定: 〇〇）。続行しますか？」とユーザーに確認する
@@ -24,8 +24,8 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 
 ### Step 2: 情報収集
 
-1. `docs/prd.md`, `docs/spec.md` を読み込む（存在すれば）
-2. `docs/tasks.md` を読み込み、完了状態を確認する
+1. `.dev-docs/prd.md`, `.dev-docs/spec.md` を読み込む（存在すれば）
+2. `.dev-docs/tasks.md` を読み込み、完了状態を確認する
 3. `git log` でコミット履歴を取得する
 4. `git diff` で変更差分を取得する
 5. ベースブランチは `main` をデフォルトとする。異なる場合はユーザーに確認する

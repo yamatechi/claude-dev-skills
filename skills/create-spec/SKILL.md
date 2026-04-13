@@ -17,7 +17,7 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 まず以下を確認してモードを判定する:
 
 ```
-IF docs/prd.md AND docs/spec.md AND docs/plan.md AND docs/tasks.md が全て存在する
+IF .dev-docs/prd.md AND .dev-docs/spec.md AND .dev-docs/plan.md AND .dev-docs/tasks.md が全て存在する
   → 差分更新モード
 ELSE IF いずれかのドキュメントが存在する（部分的）
   → 補完モード（不足ドキュメントを新規生成 + 既存ドキュメントとの整合性を確認）
@@ -54,7 +54,7 @@ ELSE
 
 以下の順序でドキュメントを生成する。各ドキュメント生成後、ユーザーに確認を求める。
 
-#### 1. `docs/prd.md` — プロダクト要件定義書
+#### 1. `.dev-docs/prd.md` — プロダクト要件定義書
 
 以下のセクションを含める:
 - 概要
@@ -65,7 +65,7 @@ ELSE
 - スコープ外
 - 成功指標
 
-#### 2. `docs/spec.md` — 技術仕様書
+#### 2. `.dev-docs/spec.md` — 技術仕様書
 
 以下のセクションを含める:
 - アーキテクチャ概要
@@ -74,7 +74,7 @@ ELSE
 - エラーハンドリング方針
 - セキュリティ考慮事項
 
-#### 3. `docs/plan.md` — 実装計画
+#### 3. `.dev-docs/plan.md` — 実装計画
 
 以下のセクションを含める:
 - 実装方針
@@ -82,7 +82,7 @@ ELSE
 - アーキテクチャ決定とその理由
 - 既存コードへの影響範囲（既存プロジェクトの場合）
 
-#### 4. `docs/tasks.md` — タスク一覧
+#### 4. `.dev-docs/tasks.md` — タスク一覧
 
 以下のフォーマットに従う:
 
@@ -134,7 +134,7 @@ ELSE
 
 ### Step 1: 既存ドキュメントの読み込み
 
-`docs/prd.md`, `docs/spec.md`, `docs/plan.md`, `docs/tasks.md` を全て読み込む。
+`.dev-docs/prd.md`, `.dev-docs/spec.md`, `.dev-docs/plan.md`, `.dev-docs/tasks.md` を全て読み込む。
 
 ### Step 2: 変更要望のヒアリング
 

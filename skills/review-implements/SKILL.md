@@ -16,8 +16,8 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 
 ### Step 1: 入力の読み込み
 
-1. `docs/spec.md` を読み込む（存在すれば）
-2. `docs/tasks.md` を読み込む（存在すれば）
+1. `.dev-docs/spec.md` を読み込む（存在すれば）
+2. `.dev-docs/tasks.md` を読み込む（存在すれば）
 3. テストコードを読み込む（存在すれば）
 4. 実装コードを読み込む
 5. `git diff` で変更差分を確認する
@@ -58,7 +58,7 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 
 ### Step 5: レビューレポートの出力
 
-以下のフォーマットでレポートを出力する。**チャットに表示すると同時に `docs/review-report.md` にも保存する。**
+以下のフォーマットでレポートを出力する。**チャットに表示すると同時に `.dev-docs/review-report.md` にも保存する。**
 
 ```markdown
 # レビューレポート

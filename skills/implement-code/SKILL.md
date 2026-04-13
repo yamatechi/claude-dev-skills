@@ -15,7 +15,7 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 ## モード判定
 
 ```
-IF docs/review-report.md が存在する AND ユーザーが「レビュー指摘を修正して」等と指示
+IF .dev-docs/review-report.md が存在する AND ユーザーが「レビュー指摘を修正して」等と指示
   → レビュー指摘反映モード
 ELSE
   → 通常実装モード
@@ -27,15 +27,15 @@ ELSE
 
 ### Step 1: 入力の読み込み
 
-1. `docs/spec.md` を読み込む（存在すれば）
-2. `docs/plan.md` を読み込む（存在すれば — アーキテクチャ決定・設計方針を把握する）
-3. `docs/tasks.md` を読み込む（存在すれば）
+1. `.dev-docs/spec.md` を読み込む（存在すれば）
+2. `.dev-docs/plan.md` を読み込む（存在すれば — アーキテクチャ決定・設計方針を把握する）
+3. `.dev-docs/tasks.md` を読み込む（存在すれば）
 4. テストコードを読み込む
 
 ### Step 2: 未完了タスクの取得
 
-`docs/tasks.md` から未完了タスク（`- [ ]`）を依存順に取得する。
-`docs/tasks.md` が存在しない場合は、テストファイルから実装対象を特定する。
+`.dev-docs/tasks.md` から未完了タスク（`- [ ]`）を依存順に取得する。
+`.dev-docs/tasks.md` が存在しない場合は、テストファイルから実装対象を特定する。
 
 ### Step 3: タスクごとの実装
 
@@ -74,7 +74,7 @@ ELSE
 
 #### 3f. タスク完了の記録
 
-`docs/tasks.md` の該当タスクのチェックボックスを `[x]` に更新する。
+`.dev-docs/tasks.md` の該当タスクのチェックボックスを `[x]` に更新する。
 
 #### 3g. コミット
 
@@ -102,7 +102,7 @@ ELSE
 
 ### Step 1: レビューレポートの読み込み
 
-`docs/review-report.md` を読み込む。
+`.dev-docs/review-report.md` を読み込む。
 
 ### Step 2: 指摘の抽出
 
@@ -122,4 +122,4 @@ ELSE
 fix: レビュー指摘の修正
 ```
 
-注意: `docs/review-report.md` は上書きしない（次の `review-implements` で再生成される）。
+注意: `.dev-docs/review-report.md` は上書きしない（次の `review-implements` で再生成される）。

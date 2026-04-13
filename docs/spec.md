@@ -21,7 +21,7 @@ claude-dev-skills/
 │   │   └── SKILL.md
 │   └── create-pr/
 │       └── SKILL.md
-├── docs/
+├── .dev-docs/
 │   └── prd.md
 │   └── spec.md
 │   └── plan.md
@@ -161,7 +161,7 @@ allowed-tools: Read Grep Glob Bash Write Edit Agent
 #### モード判定ロジック
 
 ```
-IF docs/prd.md OR docs/spec.md OR docs/plan.md OR docs/tasks.md が存在する
+IF .dev-docs/prd.md OR .dev-docs/spec.md OR .dev-docs/plan.md OR .dev-docs/tasks.md が存在する
   → 差分更新モード
 ELSE
   → 新規作成モード
@@ -178,10 +178,10 @@ ELSE
    - 主要な設定ファイルを読む（→ 技術スタック検出）
    - 既存テストのスタイルを分析
 4. ドキュメント生成順序:
-   1. `docs/prd.md` — 要件定義
-   2. `docs/spec.md` — 技術仕様（API設計、データモデル、処理フロー等）
-   3. `docs/plan.md` — 実装計画（アーキテクチャ決定、技術選定理由）
-   4. `docs/tasks.md` — タスク一覧（→ タスク分解仕様に準拠）
+   1. `.dev-docs/prd.md` — 要件定義
+   2. `.dev-docs/spec.md` — 技術仕様（API設計、データモデル、処理フロー等）
+   3. `.dev-docs/plan.md` — 実装計画（アーキテクチャ決定、技術選定理由）
+   4. `.dev-docs/tasks.md` — タスク一覧（→ タスク分解仕様に準拠）
 5. 各ドキュメント生成後、ユーザーに確認を求める
 
 #### 差分更新モード手順
@@ -201,7 +201,7 @@ ELSE
 
 #### タスク分解仕様
 
-`docs/tasks.md` のフォーマット:
+`.dev-docs/tasks.md` のフォーマット:
 
 ```markdown
 # タスク一覧
@@ -284,7 +284,7 @@ ELSE
 
 #### テストコード生成手順
 
-1. 仕様書（`docs/spec.md`）を読み込む（存在しない場合はユーザーの口頭仕様を使用）
+1. 仕様書（`.dev-docs/spec.md`）を読み込む（存在しない場合はユーザーの口頭仕様を使用）
 2. 技術スタックを検出
 3. 既存テストがある場合、スタイルを分析:
    - ディレクトリ構造
@@ -292,7 +292,7 @@ ELSE
    - テストヘルパー/フィクスチャの使用
    - セットアップ/ティアダウンのパターン
    - アサーションスタイル
-4. `docs/tasks.md` のタスク一覧を参照し、タスクごとにテストケースを設計:
+4. `.dev-docs/tasks.md` のタスク一覧を参照し、タスクごとにテストケースを設計:
    - 正常系: 期待される入出力の検証
    - 異常系: エラー条件・バリデーション失敗の検証
    - エッジケース: 境界値・空入力・大量データ等
@@ -319,11 +319,11 @@ ELSE
 #### 実装手順
 
 1. 入力を読み込む:
-   - `docs/spec.md`（存在すれば）
-   - `docs/tasks.md`（存在すれば）
+   - `.dev-docs/spec.md`（存在すれば）
+   - `.dev-docs/tasks.md`（存在すれば）
    - テストコード
-   - `docs/review-report.md`（レビュー指摘反映モードの場合）
-2. `docs/tasks.md` から未完了タスクを依存順に取得
+   - `.dev-docs/review-report.md`（レビュー指摘反映モードの場合）
+2. `.dev-docs/tasks.md` から未完了タスクを依存順に取得
 3. タスクごとに以下を実行:
    a. 対応するテストファイルを読む
    b. テストが期待する振る舞いを分析
@@ -332,7 +332,7 @@ ELSE
    e. テスト実行 → 全Pass確認
    f. リファクタリング（重複排除、命名改善、構造整理）
    g. テスト再実行 → 全Pass維持
-   h. `docs/tasks.md` のチェックボックスを `[x]` に更新
+   h. `.dev-docs/tasks.md` のチェックボックスを `[x]` に更新
    i. コミット: `<prefix>: <タスク名>`
 
 #### コミット戦略
@@ -348,16 +348,16 @@ ELSE
 
 #### レビュー指摘反映モード
 
-`docs/review-report.md` が存在し、ユーザーが「レビュー指摘を修正して」等と指示した場合:
+`.dev-docs/review-report.md` が存在し、ユーザーが「レビュー指摘を修正して」等と指示した場合:
 
-1. `docs/review-report.md` を読み込む
+1. `.dev-docs/review-report.md` を読み込む
 2. `[Critical]` と `[Warning]` の指摘を抽出
 3. 指摘ごとに:
    a. 対象ファイル・行番号を特定
    b. 改善案に基づいて修正を適用
    c. テスト実行 → 全Pass確認
 4. 全指摘の修正後にコミット: `fix: レビュー指摘の修正`
-5. `docs/review-report.md` は上書きしない（次の `review` で再生成される）
+5. `.dev-docs/review-report.md` は上書きしない（次の `review` で再生成される）
 
 #### 異常系フロー
 
@@ -374,8 +374,8 @@ ELSE
 #### レビュー手順
 
 1. 入力を読み込む:
-   - `docs/spec.md`（存在すれば）
-   - `docs/tasks.md`（存在すれば）
+   - `.dev-docs/spec.md`（存在すれば）
+   - `.dev-docs/tasks.md`（存在すれば）
    - テストコード
    - 実装コード
    - `git diff` で変更差分を確認
@@ -402,13 +402,13 @@ ELSE
 
 5. レビューレポートを出力:
    - チャットに表示
-   - `docs/review-report.md` に保存
+   - `.dev-docs/review-report.md` に保存
 
 6. 次のアクションを提案
 
 #### レビューレポート出力仕様
 
-`docs/review-report.md` のフォーマット:
+`.dev-docs/review-report.md` のフォーマット:
 
 ```markdown
 # レビューレポート
@@ -450,14 +450,14 @@ ELSE
 #### PR作成手順
 
 1. レビューレポートの確認:
-   - `docs/review-report.md` を読み込む
+   - `.dev-docs/review-report.md` を読み込む
    - 総合判定が「承認」か確認
    - 承認でない場合: 「レビューが未承認です。続行しますか？」と警告し確認
    - ファイルが存在しない場合: 「レビューが実施されていません。続行しますか？」と警告し確認
 
 2. 情報収集:
-   - `docs/prd.md`, `docs/spec.md` を読み込む
-   - `docs/tasks.md` を読み込み完了状態を確認
+   - `.dev-docs/prd.md`, `.dev-docs/spec.md` を読み込む
+   - `.dev-docs/tasks.md` を読み込み完了状態を確認
    - `git log <base>..HEAD` でコミット履歴を取得
    - `git diff <base>...HEAD` で変更差分を取得
    - ベースブランチは `main` をデフォルトとし、異なる場合はユーザーに確認
@@ -528,13 +528,13 @@ ELSE
 
 | ファイル | 生成元 | 参照元 |
 |---------|-------|-------|
-| `docs/prd.md` | create-spec | create-pr |
-| `docs/spec.md` | create-spec | create-tests, implement-code, review-implements, create-pr |
-| `docs/plan.md` | create-spec | implement-code |
-| `docs/tasks.md` | create-spec | create-tests, implement-code, create-pr |
-| `docs/review-report.md` | review-implements | implement-code（指摘反映）, create-pr |
+| `.dev-docs/prd.md` | create-spec | create-pr |
+| `.dev-docs/spec.md` | create-spec | create-tests, implement-code, review-implements, create-pr |
+| `.dev-docs/plan.md` | create-spec | implement-code |
+| `.dev-docs/tasks.md` | create-spec | create-tests, implement-code, create-pr |
+| `.dev-docs/review-report.md` | review-implements | implement-code（指摘反映）, create-pr |
 
-`docs/` ディレクトリはプロジェクトルート直下に配置する。モノレポ等でサブディレクトリ単位で開発する場合は、ユーザーが作業ディレクトリを指定し、そのディレクトリ直下の `docs/` を使用する。
+`.dev-docs/` ディレクトリはプロジェクトルート直下に配置する。モノレポ等でサブディレクトリ単位で開発する場合は、ユーザーが作業ディレクトリを指定し、そのディレクトリ直下の `.dev-docs/` を使用する。
 
 ## 5. スコープ外の明確化
 
