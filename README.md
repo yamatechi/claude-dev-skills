@@ -61,6 +61,75 @@ ln -s ~/claude-dev-skills/skills/* ~/.claude/skills/
 cp -r skills/* <your-project>/.claude/skills/
 ```
 
+## GitHub Actions で実行
+
+Issue コメントや手動トリガーから Claude Code スキルを自動実行できる。
+
+### セットアップ
+
+1. `.github/workflows/claude-dev.yml` をプロジェクトにコピーする:
+
+```bash
+# このリポジトリから直接コピー
+mkdir -p .github/workflows
+curl -o .github/workflows/claude-dev.yml \
+  https://raw.githubusercontent.com/yamatechi/claude-dev-skills/main/.github/workflows/claude-dev.yml
+```
+
+2. 認証情報を設定する（いずれか一方）:
+
+   **Anthropic API の場合:**
+
+   Settings > Secrets > `ANTHROPIC_API_KEY` を設定。
+
+   **Amazon Bedrock の場合（OIDC 認証）:**
+
+   a. AWS 側で GitHub Actions 用の IAM ロールを作成する:
+      - OIDC プロバイダー: `token.actions.githubusercontent.com`
+      - 信頼ポリシーの条件: `repo:<owner>/<repo>:*`
+      - 必要な権限: `bedrock:InvokeModel`, `bedrock:InvokeModelWithResponseStream`
+
+   b. Settings > Variables（Secrets ではない）で以下を設定:
+      - `AWS_ROLE_ARN`: IAM ロール ARN（例: `arn:aws:iam::123456789012:role/github-actions-bedrock`）
+      - `AWS_REGION`: リージョン（例: `us-east-1`）
+      - `ANTHROPIC_MODEL`: *(任意)* モデル ID（例: `us.anthropic.claude-sonnet-4-6-20250514-v1:0`）
+
+   > `AWS_ROLE_ARN` が設定されている場合、OIDC 認証で Bedrock が自動的に使用される。
+
+3. リポジトリの Settings > Actions > General で:
+   - Workflow permissions を **Read and write permissions** に設定
+
+### 使い方
+
+**Issue コメントから実行:**
+
+Issue を作成し、コメントで以下のように指示する:
+
+```
+/orchestrator ログイン機能を作って
+```
+
+個別スキルも実行可能:
+
+```
+/create-spec ユーザー管理機能の仕様を作成して
+/create-tests
+/implement-code
+/review-implements
+/create-pr
+```
+
+**手動実行:**
+
+Actions タブ → "Claude Dev Skills" → "Run workflow" からスキルと要望を入力して実行。
+
+### 動作の流れ
+
+1. Issue コメントでコマンドを検知（write 権限を持つユーザーのみ実行可能）
+2. Claude Code をインストールし、スキルをセットアップ
+3. 指定されたスキルを CI モード（確認なし・全自動）で実行
+4. 実行結果を Issue コメントとして投稿
+
 ## 要件
 
 - Claude Code

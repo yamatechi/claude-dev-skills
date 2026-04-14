@@ -1,0 +1,340 @@
+name: Claude Dev Skills
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      skill:
+        description: "実行するスキル"
+        required: true
+        default: "orchestrator"
+        type: choice
+        options:
+          - orchestrator
+          - create-spec
+          - create-tests
+          - implement-code
+          - review-implements
+          - create-pr
+      request:
+        description: "要望（例: ログイン機能を作って）"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+  id-token: write
+
+jobs:
+  run-skill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       !github.event.issue.pull_request &&
+       (startsWith(github.event.comment.body, '/orchestrator') ||
+        startsWith(github.event.comment.body, '/create-spec') ||
+        startsWith(github.event.comment.body, '/create-tests') ||
+        startsWith(github.event.comment.body, '/implement-code') ||
+        startsWith(github.event.comment.body, '/review-implements') ||
+        startsWith(github.event.comment.body, '/create-pr')))
+
+    steps:
+      # -------------------------------------------------------
+      # 1. 権限チェック（issue_comment の場合のみ）
+      # -------------------------------------------------------
+      - name: Check user permissions
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data } = await github.rest.repos.getCollaboratorPermissionLevel({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              username: context.payload.comment.user.login,
+            });
+            if (!['admin', 'write'].includes(data.permission)) {
+              core.setFailed(`User ${context.payload.comment.user.login} does not have write permission`);
+            }
+
+      # -------------------------------------------------------
+      # 2. コマンド解析
+      # -------------------------------------------------------
+      - name: Parse command
+        id: parse
+        uses: actions/github-script@v7
+        with:
+          script: |
+            let skill, request;
+            if (context.eventName === 'workflow_dispatch') {
+              skill = context.payload.inputs.skill;
+              request = context.payload.inputs.request;
+            } else {
+              const body = context.payload.comment.body;
+              const match = body.match(/^\/([\w-]+)\s*([\s\S]*)/);
+              if (!match) {
+                core.setFailed('Could not parse command');
+                return;
+              }
+              skill = match[1];
+              request = match[2].trim();
+            }
+            core.setOutput('skill', skill);
+            core.setOutput('request', request);
+            core.info(`Skill: ${skill}`);
+            core.info(`Request: ${request}`);
+
+      # -------------------------------------------------------
+      # 3. リアクション追加（受付通知）
+      # -------------------------------------------------------
+      - name: Add reaction
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.reactions.createForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: context.payload.comment.id,
+              content: 'eyes',
+            });
+
+      # -------------------------------------------------------
+      # 4. リポジトリのチェックアウト
+      # -------------------------------------------------------
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # -------------------------------------------------------
+      # 5. Node.js セットアップ & Claude Code インストール
+      # -------------------------------------------------------
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      # -------------------------------------------------------
+      # 6. スキルのセットアップ
+      # -------------------------------------------------------
+      - name: Setup skills
+        run: |
+          SKILLS_TARGET=".claude/skills"
+          mkdir -p "$SKILLS_TARGET"
+
+          if [ -d "skills" ]; then
+            # このリポジトリ自体で実行されている場合
+            cp -r skills/* "$SKILLS_TARGET/"
+          else
+            # 別リポジトリで実行されている場合 — スキルをクローン
+            git clone --depth 1 https://github.com/yamatechi/claude-dev-skills.git /tmp/claude-dev-skills
+            cp -r /tmp/claude-dev-skills/skills/* "$SKILLS_TARGET/"
+          fi
+
+          echo "Installed skills:"
+          ls "$SKILLS_TARGET/"
+
+      # -------------------------------------------------------
+      # 7. Git 設定
+      # -------------------------------------------------------
+      - name: Configure git
+        run: |
+          git config user.name "claude-dev[bot]"
+          git config user.email "claude-dev[bot]@users.noreply.github.com"
+
+      # -------------------------------------------------------
+      # 8. AWS 認証（Bedrock 使用時）
+      # -------------------------------------------------------
+      - name: Configure AWS credentials
+        if: vars.AWS_ROLE_ARN != ''
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+
+      # -------------------------------------------------------
+      # 9. Claude Code ツール権限設定
+      # -------------------------------------------------------
+      - name: Configure Claude Code permissions
+        run: |
+          mkdir -p .claude
+          cat > .claude/settings.json << 'SETTINGS_EOF'
+          {
+            "permissions": {
+              "allow": [
+                "Bash(*)",
+                "Read",
+                "Write(*)",
+                "Edit(*)",
+                "Glob",
+                "Grep"
+              ]
+            }
+          }
+          SETTINGS_EOF
+
+      # -------------------------------------------------------
+      # 10. プロンプト構築
+      # -------------------------------------------------------
+      - name: Build prompt
+        id: build
+        run: |
+          SKILL="${{ steps.parse.outputs.skill }}"
+          SKILL_FILE=".claude/skills/${SKILL}/SKILL.md"
+
+          if [ ! -f "$SKILL_FILE" ]; then
+            echo "::error::Skill file not found: ${SKILL_FILE}"
+            exit 1
+          fi
+
+          # システムプロンプトを構築
+          cat > /tmp/system-prompt.txt << 'HEADER_EOF'
+          あなたはCI環境（GitHub Actions）で動作する開発自動化エージェントです。
+          以下のスキルの手順に従って、ユーザーの要望を実装してください。
+
+          ## CI環境での重要な注意事項
+
+          - **確認ステップは全てスキップ**し、自動で最適な判断をして進めてください
+          - ブランチ作成、コミット、プッシュ、PR作成を全て自動で行ってください
+          - エラーが発生した場合は、可能な限り自動で修正を試みてください
+          - `gh` CLI は認証済みです（GH_TOKEN が設定されています）
+          - git のユーザー設定は完了しています
+          - ユーザーに質問する代わりに、合理的なデフォルトを選択して進めてください
+
+          HEADER_EOF
+
+          # メインスキルを追加
+          echo "## 実行するスキル: ${SKILL}" >> /tmp/system-prompt.txt
+          echo "" >> /tmp/system-prompt.txt
+          cat "$SKILL_FILE" >> /tmp/system-prompt.txt
+
+          # orchestrator の場合、サブスキルも追加
+          if [ "$SKILL" = "orchestrator" ]; then
+            echo "" >> /tmp/system-prompt.txt
+            echo "---" >> /tmp/system-prompt.txt
+            echo "" >> /tmp/system-prompt.txt
+            echo "## 参照: サブスキル定義" >> /tmp/system-prompt.txt
+            for sub in create-spec create-tests implement-code review-implements create-pr; do
+              SUB_FILE=".claude/skills/${sub}/SKILL.md"
+              if [ -f "$SUB_FILE" ]; then
+                echo "" >> /tmp/system-prompt.txt
+                echo "### --- ${sub} ---" >> /tmp/system-prompt.txt
+                echo "" >> /tmp/system-prompt.txt
+                cat "$SUB_FILE" >> /tmp/system-prompt.txt
+              fi
+            done
+          fi
+
+          echo "System prompt size: $(wc -c < /tmp/system-prompt.txt) bytes"
+
+      # -------------------------------------------------------
+      # 11. Claude Code 実行
+      # -------------------------------------------------------
+      - name: Run Claude Code
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_USE_BEDROCK: ${{ vars.AWS_ROLE_ARN != '' && '1' || '' }}
+          AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+          ANTHROPIC_MODEL: ${{ vars.ANTHROPIC_MODEL }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REQUEST='${{ steps.parse.outputs.request }}'
+          SYSTEM_PROMPT="$(cat /tmp/system-prompt.txt)"
+
+          claude -p "${REQUEST}" \
+            --append-system-prompt "${SYSTEM_PROMPT}" \
+            --output-format text \
+            --max-turns 200 \
+            2>&1 | tee /tmp/claude-output.txt
+
+          EXIT_CODE=${PIPESTATUS[0]}
+          echo "Claude Code exit code: ${EXIT_CODE}"
+          exit ${EXIT_CODE}
+
+      # -------------------------------------------------------
+      # 12. 実行結果の投稿
+      # -------------------------------------------------------
+      - name: Post success result
+        if: github.event_name == 'issue_comment' && success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let output = 'No output captured';
+            try {
+              output = fs.readFileSync('/tmp/claude-output.txt', 'utf8');
+            } catch {}
+
+            // 最後の部分を表示（最も重要な結果が末尾にある）
+            const lines = output.split('\n');
+            const lastLines = lines.slice(-150).join('\n');
+            const truncated = lines.length > 150;
+
+            const body = [
+              `## Claude Dev Skills - 完了`,
+              ``,
+              `**スキル**: \`${{ steps.parse.outputs.skill }}\``,
+              `**要望**: ${{ steps.parse.outputs.request }}`,
+              ``,
+              `<details>`,
+              `<summary>実行ログ${truncated ? '（末尾150行）' : ''}</summary>`,
+              ``,
+              '```',
+              lastLines,
+              '```',
+              ``,
+              `</details>`,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: body,
+            });
+
+      - name: Post failure result
+        if: github.event_name == 'issue_comment' && failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let output = 'No output captured';
+            try {
+              output = fs.readFileSync('/tmp/claude-output.txt', 'utf8');
+            } catch {}
+
+            const lines = output.split('\n');
+            const lastLines = lines.slice(-80).join('\n');
+
+            const body = [
+              `## Claude Dev Skills - 失敗`,
+              ``,
+              `**スキル**: \`${{ steps.parse.outputs.skill }}\``,
+              `**要望**: ${{ steps.parse.outputs.request }}`,
+              ``,
+              `実行中にエラーが発生しました。詳細は [Actions ログ](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}) を確認してください。`,
+              ``,
+              `<details>`,
+              `<summary>エラーログ（末尾80行）</summary>`,
+              ``,
+              '```',
+              lastLines,
+              '```',
+              ``,
+              `</details>`,
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              body: body,
+            });
