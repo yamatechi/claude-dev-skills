@@ -50,7 +50,7 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           trigger_phrase: "@claude"
           allowed_tools: |
-            Bash(git *),Bash(gh *),Bash(npm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(mkdir *),Bash(cp *),Bash(cat *),
+            Bash(git *),Bash(npm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(mkdir *),Bash(cp *),Bash(cat *),
             Read,Write,Edit,Glob,Grep,
             mcp__github__get_issue,
             mcp__github__create_branch,
@@ -201,7 +201,7 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt_file: /tmp/prompt.txt
           allowed_tools: |
-            Bash(git *),Bash(gh *),Bash(npm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(mkdir *),Bash(cp *),Bash(cat *),
+            Bash(git *),Bash(npm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(mkdir *),Bash(cp *),Bash(cat *),
             Read,Write,Edit,Glob,Grep,
             mcp__github__get_issue,
             mcp__github__list_issues,
