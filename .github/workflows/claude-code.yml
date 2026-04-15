@@ -27,16 +27,16 @@ jobs:
           fetch-depth: 0
 
       - name: Configure AWS credentials
-        if: vars.AWS_ROLE_ARN != ''
+        if: secrets.AWS_ROLE_ARN != ''
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-          aws-region: ${{ vars.AWS_REGION || 'us-east-1' }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
 
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          use_bedrock: ${{ vars.AWS_ROLE_ARN != '' && 'true' || 'false' }}
+          use_bedrock: ${{ secrets.AWS_ROLE_ARN != '' && 'true' || 'false' }}
           trigger_phrase: "@claude"
           claude_args: >-
             --max-turns 200
