@@ -45,12 +45,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Create MCP config
-        run: |
-          cat > /tmp/mcp-config.json << 'EOF'
-          {"mcpServers":{"github":{"command":"docker","args":["run","-i","--rm","-e","GITHUB_PERSONAL_ACCESS_TOKEN","ghcr.io/github/github-mcp-server"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":"${{ secrets.GITHUB_TOKEN }}"}}}}
-          EOF
-
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -64,7 +58,7 @@ jobs:
             mcp__github__update_issue
           claude_env: |
             GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          claude_args: "--max-turns 30 --mcp-config /tmp/mcp-config.json"
+          claude_args: "--max-turns 30"
 
   # =============================================================
   # スラッシュコマンドによるスキル実行
@@ -146,14 +140,8 @@ jobs:
           ls .claude/skills/
 
       # -------------------------------------------------------
-      # 4. MCP設定 & プロンプト構築
+      # 4. プロンプト構築
       # -------------------------------------------------------
-      - name: Create MCP config
-        run: |
-          cat > /tmp/mcp-config.json << 'EOF'
-          {"mcpServers":{"github":{"command":"docker","args":["run","-i","--rm","-e","GITHUB_PERSONAL_ACCESS_TOKEN","ghcr.io/github/github-mcp-server"],"env":{"GITHUB_PERSONAL_ACCESS_TOKEN":"${{ secrets.GITHUB_TOKEN }}"}}}}
-          EOF
-
       - name: Build prompt
         id: build
         uses: actions/github-script@v7
@@ -223,4 +211,4 @@ jobs:
             mcp__github__add_issue_comment
           claude_env: |
             GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          claude_args: "--max-turns 200 --mcp-config /tmp/mcp-config.json"
+          claude_args: "--max-turns 200"
