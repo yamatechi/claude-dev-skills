@@ -49,16 +49,9 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           trigger_phrase: "@claude"
-          allowed_tools: |
-            Bash(git *),Bash(npm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(mkdir *),Bash(cp *),Bash(cat *),
-            Read,Write,Edit,Glob,Grep,
-            mcp__github__get_issue,
-            mcp__github__create_branch,
-            mcp__github__create_pull_request,
-            mcp__github__update_issue
-          claude_env: |
-            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          claude_args: "--max-turns 30"
+          claude_args: >-
+            --max-turns 30
+            --allowedTools "Bash(git *),Bash(npm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(mkdir *),Bash(cp *),Bash(cat *),Read,Write,Edit,Glob,Grep,mcp__github__get_issue,mcp__github__create_branch,mcp__github__create_pull_request,mcp__github__update_issue"
 
   # =============================================================
   # スラッシュコマンドによるスキル実行
@@ -199,16 +192,6 @@ jobs:
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           prompt_file: /tmp/prompt.txt
-          allowed_tools: |
-            Bash(git *),Bash(npm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(mkdir *),Bash(cp *),Bash(cat *),
-            Read,Write,Edit,Glob,Grep,
-            mcp__github__get_issue,
-            mcp__github__list_issues,
-            mcp__github__create_branch,
-            mcp__github__push_files,
-            mcp__github__create_pull_request,
-            mcp__github__update_issue,
-            mcp__github__add_issue_comment
-          claude_env: |
-            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          claude_args: "--max-turns 200"
+          claude_args: >-
+            --max-turns 200
+            --allowedTools "Bash(git *),Bash(npm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(mkdir *),Bash(cp *),Bash(cat *),Read,Write,Edit,Glob,Grep,mcp__github__get_issue,mcp__github__list_issues,mcp__github__create_branch,mcp__github__push_files,mcp__github__create_pull_request,mcp__github__update_issue,mcp__github__add_issue_comment"
