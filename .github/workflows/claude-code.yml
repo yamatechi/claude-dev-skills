@@ -55,6 +55,8 @@ jobs:
             mcp__github__create_branch,
             mcp__github__create_pull_request,
             mcp__github__update_issue
+          claude_env: |
+            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           claude_args: "--max-turns 30"
 
   # =============================================================
@@ -206,4 +208,6 @@ jobs:
             mcp__github__create_pull_request,
             mcp__github__update_issue,
             mcp__github__add_issue_comment
+          claude_env: |
+            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           claude_args: "--max-turns 200"
