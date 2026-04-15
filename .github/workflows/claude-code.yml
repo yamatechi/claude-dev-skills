@@ -1,4 +1,4 @@
-name: Claude Dev Skills
+name: Claude Code
 
 on:
   issue_comment:
@@ -29,6 +29,31 @@ permissions:
   id-token: write
 
 jobs:
+  # =============================================================
+  # @claude メンションによるフリー会話
+  # =============================================================
+  chat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: >
+      github.event_name == 'issue_comment' &&
+      !github.event.issue.pull_request &&
+      contains(github.event.comment.body, '@claude') &&
+      !startsWith(github.event.comment.body, '/')
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          trigger_phrase: "@claude"
+          claude_args: |
+            --max-turns 30
+
+  # =============================================================
+  # スラッシュコマンドによるスキル実行
+  # =============================================================
   run-skill:
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -130,10 +155,8 @@ jobs:
           mkdir -p "$SKILLS_TARGET"
 
           if [ -d "skills" ]; then
-            # このリポジトリ自体で実行されている場合
             cp -r skills/* "$SKILLS_TARGET/"
           else
-            # 別リポジトリで実行されている場合 — スキルをクローン
             git clone --depth 1 https://github.com/yamatechi/claude-dev-skills.git /tmp/claude-dev-skills
             cp -r /tmp/claude-dev-skills/skills/* "$SKILLS_TARGET/"
           fi
@@ -194,7 +217,6 @@ jobs:
             exit 1
           fi
 
-          # システムプロンプトを構築
           cat > /tmp/system-prompt.txt << 'HEADER_EOF'
           あなたはCI環境（GitHub Actions）で動作する開発自動化エージェントです。
           以下のスキルの手順に従って、ユーザーの要望を実装してください。
@@ -210,12 +232,10 @@ jobs:
 
           HEADER_EOF
 
-          # メインスキルを追加
           echo "## 実行するスキル: ${SKILL}" >> /tmp/system-prompt.txt
           echo "" >> /tmp/system-prompt.txt
           cat "$SKILL_FILE" >> /tmp/system-prompt.txt
 
-          # orchestrator の場合、サブスキルも追加
           if [ "$SKILL" = "orchestrator" ]; then
             echo "" >> /tmp/system-prompt.txt
             echo "---" >> /tmp/system-prompt.txt
@@ -272,13 +292,12 @@ jobs:
               output = fs.readFileSync('/tmp/claude-output.txt', 'utf8');
             } catch {}
 
-            // 最後の部分を表示（最も重要な結果が末尾にある）
             const lines = output.split('\n');
             const lastLines = lines.slice(-150).join('\n');
             const truncated = lines.length > 150;
 
             const body = [
-              `## Claude Dev Skills - 完了`,
+              `## ✅ Claude Code - 完了`,
               ``,
               `**スキル**: \`${{ steps.parse.outputs.skill }}\``,
               `**要望**: ${{ steps.parse.outputs.request }}`,
@@ -315,7 +334,7 @@ jobs:
             const lastLines = lines.slice(-80).join('\n');
 
             const body = [
-              `## Claude Dev Skills - 失敗`,
+              `## ❌ Claude Code - 失敗`,
               ``,
               `**スキル**: \`${{ steps.parse.outputs.skill }}\``,
               `**要望**: ${{ steps.parse.outputs.request }}`,
