@@ -21,22 +21,26 @@ jobs:
       (contains(github.event.comment.body, '@claude') ||
        startsWith(github.event.comment.body, '/'))
 
+    env:
+      AWS_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Configure AWS credentials
-        if: secrets.AWS_ROLE_ARN != ''
+        if: env.AWS_ROLE_ARN != ''
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+          aws-region: ${{ env.AWS_REGION || 'us-east-1' }}
 
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          use_bedrock: ${{ secrets.AWS_ROLE_ARN != '' && 'true' || 'false' }}
+          use_bedrock: ${{ env.AWS_ROLE_ARN != '' && 'true' || 'false' }}
           trigger_phrase: "@claude"
           claude_args: >-
             --max-turns 200
