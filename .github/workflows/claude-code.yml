@@ -3,195 +3,32 @@ name: Claude Code
 on:
   issue_comment:
     types: [created]
-  workflow_dispatch:
-    inputs:
-      skill:
-        description: "実行するスキル"
-        required: true
-        default: "orchestrator"
-        type: choice
-        options:
-          - orchestrator
-          - create-spec
-          - create-tests
-          - implement-code
-          - review-implements
-          - create-pr
-      request:
-        description: "要望（例: ログイン機能を作って）"
-        required: true
-        type: string
 
 permissions:
   contents: write
   pull-requests: write
   issues: write
-  id-token: write
 
 jobs:
-  # =============================================================
-  # @claude メンションによるフリー会話
-  # =============================================================
-  chat:
+  claude:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 120
     if: >
       github.event_name == 'issue_comment' &&
       github.event.comment.user.login == github.repository_owner &&
       !github.event.issue.pull_request &&
-      contains(github.event.comment.body, '@claude') &&
-      !startsWith(github.event.comment.body, '/')
+      (contains(github.event.comment.body, '@claude') ||
+       startsWith(github.event.comment.body, '/'))
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           trigger_phrase: "@claude"
-          claude_args: >-
-            --max-turns 30
-            --allowedTools "Bash(git *),Bash(npm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(mkdir *),Bash(cp *),Bash(cat *),Read,Write,Edit,Glob,Grep,mcp__github__get_issue,mcp__github__create_branch,mcp__github__create_pull_request,mcp__github__update_issue"
-
-  # =============================================================
-  # スラッシュコマンドによるスキル実行
-  # =============================================================
-  run-skill:
-    runs-on: ubuntu-latest
-    timeout-minutes: 120
-
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      (github.event_name == 'issue_comment' &&
-       github.event.comment.user.login == github.repository_owner &&
-       !github.event.issue.pull_request &&
-       (startsWith(github.event.comment.body, '/orchestrator') ||
-        startsWith(github.event.comment.body, '/create-spec') ||
-        startsWith(github.event.comment.body, '/create-tests') ||
-        startsWith(github.event.comment.body, '/implement-code') ||
-        startsWith(github.event.comment.body, '/review-implements') ||
-        startsWith(github.event.comment.body, '/create-pr')))
-
-    steps:
-      # -------------------------------------------------------
-      # 1. コマンド解析
-      # -------------------------------------------------------
-      - name: Parse command
-        id: parse
-        uses: actions/github-script@v7
-        with:
-          script: |
-            let skill, request;
-            if (context.eventName === 'workflow_dispatch') {
-              skill = context.payload.inputs.skill;
-              request = context.payload.inputs.request;
-            } else {
-              const body = context.payload.comment.body;
-              const match = body.match(/^\/([\w-]+)\s*([\s\S]*)/);
-              if (!match) {
-                core.setFailed('Could not parse command');
-                return;
-              }
-              skill = match[1];
-              request = match[2].trim();
-            }
-            core.setOutput('skill', skill);
-            core.setOutput('request', request);
-
-      # -------------------------------------------------------
-      # 2. リアクション追加（受付通知）
-      # -------------------------------------------------------
-      - name: Add reaction
-        if: github.event_name == 'issue_comment'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.reactions.createForIssueComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              comment_id: context.payload.comment.id,
-              content: 'eyes',
-            });
-
-      # -------------------------------------------------------
-      # 3. チェックアウト & スキルセットアップ
-      # -------------------------------------------------------
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup skills
-        run: |
-          mkdir -p .claude/skills
-          if [ -d "skills" ]; then
-            cp -r skills/* .claude/skills/
-          else
-            git clone --depth 1 https://github.com/yamatechi/claude-dev-skills.git /tmp/claude-dev-skills
-            cp -r /tmp/claude-dev-skills/skills/* .claude/skills/
-          fi
-          echo "Installed skills:"
-          ls .claude/skills/
-
-      # -------------------------------------------------------
-      # 4. プロンプト構築
-      # -------------------------------------------------------
-      - name: Build prompt
-        id: build
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const skill = '${{ steps.parse.outputs.skill }}';
-            const request = `${{ steps.parse.outputs.request }}`;
-            const skillFile = `.claude/skills/${skill}/SKILL.md`;
-
-            if (!fs.existsSync(skillFile)) {
-              core.setFailed(`Skill file not found: ${skillFile}`);
-              return;
-            }
-
-            let prompt = [
-              `あなたはCI環境（GitHub Actions）で動作する開発自動化エージェントです。`,
-              `以下のスキルの手順に従って、ユーザーの要望を実装してください。`,
-              ``,
-              `## CI環境での重要な注意事項`,
-              `- 確認ステップは全てスキップし、自動で最適な判断をして進めてください`,
-              `- ブランチ作成、コミット、プッシュ、PR作成を全て自動で行ってください`,
-              `- PR作成にはmcp__github__create_pull_requestツールを使用してください`,
-              `- ブランチ作成にはmcp__github__create_branchツールを使用してください`,
-              `- エラーが発生した場合は、可能な限り自動で修正を試みてください`,
-              `- ユーザーに質問する代わりに、合理的なデフォルトを選択して進めてください`,
-              ``,
-              `## 実行するスキル: ${skill}`,
-              ``,
-              fs.readFileSync(skillFile, 'utf8'),
-            ];
-
-            if (skill === 'orchestrator') {
-              const subs = ['create-spec', 'create-tests', 'implement-code', 'review-implements', 'create-pr'];
-              prompt.push('', '---', '', '## 参照: サブスキル定義');
-              for (const sub of subs) {
-                const subFile = `.claude/skills/${sub}/SKILL.md`;
-                if (fs.existsSync(subFile)) {
-                  prompt.push('', `### --- ${sub} ---`, '', fs.readFileSync(subFile, 'utf8'));
-                }
-              }
-            }
-
-            prompt.push('', '---', '', `## ユーザーの要望`, '', request);
-
-            const fullPrompt = prompt.join('\n');
-            fs.writeFileSync('/tmp/prompt.txt', fullPrompt);
-            core.info(`Prompt size: ${fullPrompt.length} chars`);
-
-      # -------------------------------------------------------
-      # 5. Claude Code 実行（claude-code-action）
-      # -------------------------------------------------------
-      - name: Run Claude Code
-        uses: anthropics/claude-code-action@v1
-        with:
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          prompt_file: /tmp/prompt.txt
           claude_args: >-
             --max-turns 200
             --allowedTools "Bash(git *),Bash(npm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(mkdir *),Bash(cp *),Bash(cat *),Read,Write,Edit,Glob,Grep,mcp__github__get_issue,mcp__github__list_issues,mcp__github__create_branch,mcp__github__push_files,mcp__github__create_pull_request,mcp__github__update_issue,mcp__github__add_issue_comment"
