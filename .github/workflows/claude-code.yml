@@ -44,5 +44,5 @@ jobs:
           trigger_phrase: "@claude"
           claude_args: >-
             --max-turns 200
-            --model anthropic.claude-sonnet-4-6
+            --model jp.anthropic.claude-sonnet-4-6
             --allowedTools "Bash(git *),Bash(npm *),Bash(npx *),Bash(node *),Bash(ls *),Bash(mkdir *),Bash(cp *),Bash(cat *),Read,Write,Edit,Glob,Grep,mcp__github__get_issue,mcp__github__list_issues,mcp__github__create_branch,mcp__github__push_files,mcp__github__create_pull_request,mcp__github__update_issue,mcp__github__add_issue_comment"
